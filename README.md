@@ -1,3 +1,6 @@
+### Daveena Alexandra Pentury
+#### 24/540390/SV/24833
+
 # PANDUAN LENGKAP UTS KEPL — Laravel REST API + Vue.js + GitHub Actions + Docker + Overleaf
 
 > **Baca mulai Tahap 0 dan ikuti berurutan.** Dokumen ini dimaksudkan agar tugas bisa dikerjakan sendiri tanpa harus bolak-balik bertanya. Contoh aplikasi: **Sistem Manajemen Tugas (To-Do List)**. Bahasa perintah: **Windows PowerShell**. Jika menggunakan terminal Linux/macOS, ganti perintah `Copy-Item` dengan `cp`, `New-Item` dengan `touch`, dan `Expand-Archive` dengan `unzip`.
