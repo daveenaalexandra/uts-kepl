@@ -1,0 +1,57 @@
+services:
+  database:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: todo_app
+      MYSQL_USER: todo_user
+      MYSQL_PASSWORD: ${DB_PASSWORD:?isi DB_PASSWORD di .env akar proyek}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?isi MYSQL_ROOT_PASSWORD di .env akar proyek}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_NAME: UTS Todo
+      APP_ENV: local
+      APP_DEBUG: "true" # demonstrasi lokal; wajib false untuk publik/produksi
+      APP_KEY: ${APP_KEY:?isi APP_KEY di .env akar proyek}
+      APP_URL: http://localhost:8080
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: mysql
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_DATABASE: todo_app
+      DB_USERNAME: todo_user
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8000:80"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  mysql_data:

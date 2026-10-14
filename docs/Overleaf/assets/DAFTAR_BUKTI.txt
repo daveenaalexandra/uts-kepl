@@ -1,0 +1,12 @@
+Nama file yang disarankan:
+01-api-postman.png
+02-vue-tugas.png
+03-github-pr.png
+04-branch-protection.png
+05-ci-dua-job.png
+06-gh-actions-publish.png
+07-ghcr-images.png
+08-docker-compose.png
+09-running-app.png
+10-frankenphp.png (bonus)
+11-laravel-tests.png

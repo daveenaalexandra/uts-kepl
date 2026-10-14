@@ -1,0 +1,246 @@
+\documentclass[12pt,a4paper]{report}
+% Template laporan UTS KEPL - dapat langsung dikompilasi di Overleaf (pdfLaTeX).
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[indonesian]{babel}
+\usepackage{lmodern}
+\usepackage[a4paper,left=3.5cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black}
+\setlist[itemize]{topsep=3pt,itemsep=2pt}
+\setlist[enumerate]{topsep=3pt,itemsep=2pt}
+\lstdefinestyle{code}{basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single,rulecolor=\color{gray!40},backgroundcolor=\color{gray!5},columns=fullflexible,keepspaces=true,showstringspaces=false}
+\lstset{style=code}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{Laporan UTS KEPL}\fancyhead[R]{\nouppercase{\leftmark}}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{15pt}
+\newcommand{\isian}[1]{\textbf{[ISI: #1]}}
+\newcommand{\bukti}[2]{%
+\begin{figure}[H]\centering
+\IfFileExists{assets/#1}{%
+  \includegraphics[width=0.93\textwidth,height=7cm,keepaspectratio]{assets/#1}%
+}{%
+  \fbox{\parbox[c][4.3cm][c]{0.88\textwidth}{\centering\textbf{BUKTI BELUM DILAMPIRKAN}\\[5pt]#2\\[5pt]\small Unggah gambar bernama \texttt{assets/#1}.}}%
+}%
+\caption{#2}\end{figure}}
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{1.1cm}
+{\Large\bfseries LAPORAN UJIAN TENGAH SEMESTER\par}
+\vspace{0.35cm}
+{\Large\bfseries REKAYASA PERANGKAT LUNAK / KEPL\par}
+\vspace{1cm}
+{\Huge\bfseries SISTEM MANAJEMEN TUGAS\par}
+\vspace{0.4cm}
+{\Large Laravel RESTful API, Vue.js, GitHub Actions, dan Docker\par}
+\vspace{1.8cm}
+{\large Disusun oleh:\par}
+\vspace{0.4cm}
+{\Large\bfseries \isian{Nama mahasiswa}\par}
+{\large \isian{NIM}\par}
+\vfill
+{\large \isian{Program studi}\\\isian{Fakultas / Universitas}\\2026\par}
+\end{titlepage}
+\pagenumbering{roman}
+\chapter*{Keterangan Penting}\addcontentsline{toc}{chapter}{Keterangan Penting}
+Dokumen ini adalah \textbf{draf laporan dan panduan pencatatan bukti}, bukan klaim bahwa program atau pengujian telah selesai. Semua bagian bertanda \textbf{[ISI: ...]} dan kotak screenshot wajib dilengkapi berdasarkan hasil implementasi nyata. Nama mata kuliah dapat disesuaikan dengan penyebutan resmi dosen.
+\tableofcontents
+\clearpage\pagenumbering{arabic}
+
+\chapter{Pendahuluan}
+\section{Latar Belakang}
+Aplikasi berbasis web modern umumnya memisahkan layanan pengolahan data pada \textit{backend} dan antarmuka pengguna pada \textit{frontend}. Pada proyek ini, Laravel digunakan untuk menyediakan RESTful API yang bertukar data JSON, sedangkan Vue.js digunakan sebagai antarmuka yang mengakses API melalui Axios. Proses pengembangan dikelola menggunakan GitHub, diuji otomatis melalui GitHub Actions, kemudian dikemas menjadi kontainer Docker agar proses menjalankan aplikasi lebih konsisten.
+
+\section{Rumusan Masalah}
+\begin{enumerate}
+\item Bagaimana membangun API autentikasi berbasis token dan operasi CRUD dengan Laravel?
+\item Bagaimana Vue.js berkomunikasi dengan RESTful API menggunakan Axios?
+\item Bagaimana pengujian, kolaborasi GitHub, CI, publikasi image, serta integrasi Docker dilakukan?
+\end{enumerate}
+\section{Tujuan}
+Mengembangkan aplikasi manajemen tugas sederhana dengan kemampuan registrasi, login, menambah dan mengubah tugas, menghapus tugas, serta menampilkan daftar tugas khusus milik pengguna yang masuk. Pengembangan juga bertujuan mendokumentasikan pengujian, otomatisasi CI, dan proses kontainerisasi aplikasi.
+\section{Ruang Lingkup}
+Atribut tugas meliputi judul, deskripsi, status, dan tenggat waktu. Backend dirancang menggunakan Laravel dan token Laravel Sanctum, frontend menggunakan Vue 3 dan Axios, serta basis data menggunakan MySQL. Publikasi image diarahkan ke GitHub Container Registry (GHCR). Fitur tambahan berupa menjalankan Laravel melalui FrankenPHP bersifat opsional dan dilaporkan hanya jika berhasil dijalankan.
+
+\chapter{Analisis Kebutuhan dan Perancangan}
+\section{Pemetaan Kriteria Penilaian}
+\begin{longtable}{p{1.0cm}p{2cm}p{8cm}r}
+\toprule
+No & CPMK & Komponen yang dinilai & Nilai\\\midrule\endfirsthead
+\toprule No & CPMK & Komponen yang dinilai & Nilai\\\midrule\endhead
+1 & CPMK1 & Backend Laravel: RESTful API, token, CRUD, JSON, Postman, feature test & 15\\
+2 & CPMK1 & Frontend Vue.js memakai API backend lewat Axios & 10\\
+3 & CPMK2 & Repositori GitHub, branch, pull request, branch protection, workflow CI dua job & 15\\
+4 & CPMK3 & Job deploy di GitHub Actions, GitHub Secrets, image di GHCR & 15\\
+5 & CPMK4, 5 & Dockerfile backend dan frontend (multi-stage), .dockerignore & 20\\
+6 & CPMK6, 7 & Docker Compose: database, backend, dan frontend terhubung & 25\\
+7 & -- & Bonus: backend Laravel berjalan di FrankenPHP & +10\\
+8 & -- & Laporan PDF (wajib) & --\\
+\midrule\multicolumn{3}{r}{\textbf{Total nilai pokok}} & \textbf{100}\\\bottomrule
+\end{longtable}
+
+\section{Arsitektur Sistem}
+Pengguna membuka frontend Vue.js pada browser. Vue.js mengirim permintaan HTTP melalui Axios ke backend Laravel. Backend memvalidasi token autentikasi, memproses data, dan mengakses basis data MySQL. GitHub Actions menjalankan pengujian, kemudian mempublikasikan image ke GHCR setelah perubahan diintegrasikan ke cabang utama.
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\centering\textbf{Browser (Vue.js)} $\longrightarrow$ \textbf{Axios / HTTP} $\longrightarrow$ \textbf{Laravel REST API} $\longrightarrow$ \textbf{MySQL}\\[6pt]
+\textbf{GitHub} $\longrightarrow$ \textbf{Actions (CI dan publikasi)} $\longrightarrow$ \textbf{GHCR}}}
+\end{center}
+
+\section{Perancangan Basis Data}
+Tabel \texttt{users} menggunakan struktur autentikasi standar Laravel. Tabel \texttt{tasks} memiliki kolom \texttt{id}, \texttt{user\_id}, \texttt{title}, \texttt{description}, \texttt{status}, \texttt{due\_date}, \texttt{created\_at}, dan \texttt{updated\_at}. Setiap tugas terkait dengan tepat satu pengguna melalui \texttt{user\_id}.
+
+\section{Rancangan Endpoint RESTful API}
+\begin{longtable}{p{2cm}p{5cm}p{4.7cm}}
+\toprule Metode & Endpoint & Kegunaan\\\midrule\endfirsthead
+\toprule Metode & Endpoint & Kegunaan\\\midrule\endhead
+POST & \texttt{/api/register} & Registrasi pengguna\\
+POST & \texttt{/api/login} & Login dan memperoleh token\\
+GET & \texttt{/api/user} & Melihat identitas pengguna\\
+POST & \texttt{/api/logout} & Menghapus token aktif\\
+GET & \texttt{/api/tasks} & Melihat daftar tugas\\
+POST & \texttt{/api/tasks} & Menambah tugas\\
+GET & \texttt{/api/tasks/\{id\}} & Melihat detail tugas\\
+PUT/PATCH & \texttt{/api/tasks/\{id\}} & Mengubah tugas\\
+DELETE & \texttt{/api/tasks/\{id\}} & Menghapus tugas\\
+\bottomrule
+\end{longtable}
+\noindent\textbf{Catatan keamanan:} Semua endpoint tugas dan logout harus memerlukan token, serta backend wajib memastikan pengguna hanya dapat mengakses tugasnya sendiri.
+
+\chapter{Implementasi}
+\section{Perangkat dan Teknologi}
+\begin{itemize}
+\item Bahasa dan runtime backend: PHP, Laravel, Composer.
+\item Bahasa dan runtime frontend: JavaScript, Node.js, Vue 3, Axios.
+\item Basis data: MySQL.
+\item Pengujian API: Postman; pengujian backend: PHPUnit atau Pest.
+\item Version control dan otomatisasi: Git, GitHub, GitHub Actions, GHCR.
+\item Infrastruktur lokal: Docker dan Docker Compose.
+\end{itemize}
+\noindent Versi aktual perangkat yang dipakai: \isian{output php -v, composer -V, node -v, docker --version}.
+
+\section{Persiapan Proyek}
+Proyek direncanakan menggunakan dua folder utama, yaitu \texttt{backend/} dan \texttt{frontend/}. Langkah penyiapan awal:
+\begin{lstlisting}[language=bash]
+mkdir uts-kepl && cd uts-kepl
+composer create-project laravel/laravel backend
+npm create vue@latest frontend
+cd backend
+php artisan install:api
+php artisan make:model Task -m
+php artisan make:controller Api/AuthController
+php artisan make:controller Api/TaskController --api
+cd ../frontend
+npm install axios
+\end{lstlisting}
+\noindent\textbf{Catatan:} Saat membuat Vue, pilih opsi kebutuhan sederhana atau sesuaikan dengan keadaan proyek. Implementasi \textit{migration}, controller, route, dan konfigurasi autentikasi dijelaskan dalam repositori proyek.
+
+\section{Backend Laravel dan Autentikasi Token}
+API menggunakan \textit{Content-Type: application/json}. Token autentikasi dikirim melalui header \texttt{Authorization: Bearer <token>}. Password disimpan secara aman menggunakan mekanisme hashing Laravel. Setiap proses tambah atau ubah tugas melewati validasi pada backend.
+\bukti{01-api-postman.png}{Hasil pengujian API di Postman: login, token, dan salah satu operasi CRUD}
+
+\section{Frontend Vue.js dan Axios}
+Frontend menyediakan halaman registrasi, login, dan dashboard tugas. Axios digunakan untuk memanggil endpoint backend serta menyertakan token pada permintaan yang memerlukan autentikasi. Dashboard minimal memiliki formulir tambah/ubah tugas, daftar tugas, pilihan status, dan tombol hapus.
+\bukti{02-vue-tugas.png}{Halaman frontend Vue.js menampilkan daftar dan formulir tugas}
+
+\section{Pengelolaan Repositori dan Kolaborasi}
+Repositori disimpan pada GitHub dengan branch utama \texttt{main} dan branch pengembangan seperti \texttt{feature/task-crud}. Perubahan dilakukan pada branch pengembangan, diajukan melalui pull request, kemudian diintegrasikan setelah pemeriksaan. Aturan proteksi branch ditetapkan agar penggabungan membutuhkan pull request dan pemeriksaan CI yang lulus.
+\noindent Tautan repositori: \isian{URL GitHub}.
+\bukti{03-github-pr.png}{Branch dan pull request pada repositori GitHub}
+\bukti{04-branch-protection.png}{Pengaturan branch protection/ruleset dan pemeriksaan wajib}
+
+\section{Continuous Integration Dua Job}
+Workflow CI dirancang memiliki dua job terpisah: \texttt{backend-test} untuk menjalankan feature test Laravel dan \texttt{frontend-build} untuk memasang dependensi serta mem-build aplikasi Vue.js. Bukti harus menampilkan kedua job selesai dengan status sukses.
+\bukti{05-ci-dua-job.png}{Workflow GitHub Actions: job backend-test dan frontend-build}
+
+\section{Publikasi Image ke GitHub Container Registry}
+Workflow publikasi berjalan setelah perubahan masuk ke \texttt{main} dan pengujian yang diperlukan berhasil. Proses ini masuk ke GHCR, membangun image backend dan frontend, lalu mengirimnya ke repositori \texttt{ghcr.io}. GitHub Secrets tidak boleh dicetak pada log maupun disertakan dalam laporan.
+\noindent Nama image backend: \isian{ghcr.io/akun/nama-backend:tag}.\\
+Nama image frontend: \isian{ghcr.io/akun/nama-frontend:tag}.
+\bukti{06-gh-actions-publish.png}{Job publikasi/deploy image di GitHub Actions}
+\bukti{07-ghcr-images.png}{Dua paket image backend dan frontend pada GitHub Container Registry}
+
+\section{Dockerfile Multi-Stage dan Docker Compose}
+Dockerfile backend dan frontend masing-masing menggunakan tahapan build terpisah dari tahap runtime. File \texttt{.dockerignore} mengecualikan dependency lokal, file rahasia, dan artefak yang tidak diperlukan. \texttt{compose.yaml} menghubungkan tiga layanan: \texttt{db}, \texttt{backend}, dan \texttt{frontend}. Aplikasi perlu diakses melalui browser dan diuji apakah perubahan tugas tersimpan di database.
+\bukti{08-docker-compose.png}{Perintah docker compose ps menampilkan tiga layanan berjalan}
+\bukti{09-running-app.png}{Aplikasi berjalan melalui Docker Compose dan berhasil memakai API}
+
+\section{Bonus FrankenPHP (Opsional)}
+Jika berhasil dijalankan, backend Laravel juga didemonstrasikan menggunakan server aplikasi FrankenPHP. Lampirkan konfigurasi, hasil menjalankan kontainer, dan bukti endpoint API dapat diakses. Jika tidak dikerjakan, nyatakan secara eksplisit bahwa kriteria bonus belum diimplementasikan.
+\bukti{10-frankenphp.png}{Bukti opsional Laravel berjalan menggunakan FrankenPHP}
+
+\chapter{Pengujian dan Pembahasan}
+\section{Rencana Pengujian API dengan Postman}
+\begin{longtable}{p{0.75cm}p{3.4cm}p{6.3cm}p{2cm}}
+\toprule No & Pengujian & Hasil yang diharapkan & Aktual\\\midrule\endfirsthead
+\toprule No & Pengujian & Hasil yang diharapkan & Aktual\\\midrule\endhead
+1 & Registrasi valid & HTTP 201; JSON pengguna berhasil dibuat & Belum diuji\\
+2 & Login valid & HTTP 200; JSON memuat token & Belum diuji\\
+3 & Login tidak valid & HTTP 422/401 sesuai implementasi & Belum diuji\\
+4 & GET tanpa token & HTTP 401 (unauthenticated) & Belum diuji\\
+5 & POST tugas valid & HTTP 201; data tugas baru dibuat & Belum diuji\\
+6 & GET daftar tugas & HTTP 200; daftar dalam JSON & Belum diuji\\
+7 & PUT/PATCH tugas & HTTP 200; perubahan tersimpan & Belum diuji\\
+8 & DELETE tugas & HTTP 200/204 sesuai implementasi & Belum diuji\\
+9 & Tugas pengguna lain & HTTP 403/404 sesuai desain otorisasi & Belum diuji\\
+10 & Logout & Token aktif dicabut & Belum diuji\\
+\bottomrule
+\end{longtable}
+\noindent\textbf{Petunjuk:} Setelah pengujian, ubah kolom Aktual sesuai respons nyata (misalnya ``Lulus, HTTP 201'') dan tambahkan bukti screenshot relevan. Jangan menyalin nilai hasil yang belum didapat.
+
+\section{Feature Test Laravel}
+Skenario otomatis mencakup autentikasi, penolakan akses tanpa token, CRUD tugas, validasi data, dan pembatasan akses antar-pengguna. Jalankan:\begin{lstlisting}[language=bash]
+cd backend
+php artisan test
+\end{lstlisting}
+\noindent Ringkasan hasil: \isian{jumlah test, passed/failed, durasi}.
+\bukti{11-laravel-tests.png}{Output feature test Laravel dari terminal}
+
+\section{Pengujian Antarmuka}
+Pastikan halaman login berhasil mengirim kredensial, token digunakan oleh Axios, daftar tugas ditampilkan, dan operasi tambah/ubah/hapus tercermin pada tampilan. Catat hasil pengujian aktual: \isian{hasil dan kendala}.
+
+\section{Pengujian Integrasi Kontainer}
+Jalankan \texttt{docker compose up --build -d}, periksa status layanan, lalu uji akses aplikasi dari browser. Hasil aktual: \isian{status ketiga layanan, URL lokal, pengujian CRUD}.
+
+\chapter{Penutup}
+\section{Kesimpulan}
+\isian{Tuliskan kesimpulan berdasarkan implementasi dan bukti nyata: API, frontend, CI, GHCR, serta Docker Compose. Jangan menyatakan berhasil sebelum diuji.}
+\section{Saran}
+Pengembangan berikutnya dapat mencakup pengelolaan kategori tugas, pencarian, pagination, validasi tambahan, logging, dan pengujian otomatis yang lebih lengkap.
+
+\appendix
+\chapter{Lampiran}
+\section{Identitas Tautan}
+\begin{itemize}
+\item Repo GitHub: \isian{URL}.
+\item Pull request: \isian{URL}.
+\item CI sukses: \isian{URL run}.
+\item Workflow publish sukses: \isian{URL run}.
+\item Package GHCR: \isian{URL paket}.
+\end{itemize}
+\section{Daftar Pemeriksaan Sebelum Mengumpulkan}
+\begin{itemize}
+\item[$\square$] Seluruh endpoint CRUD dan login token berjalan.
+\item[$\square$] Bukti Postman dan feature test dilampirkan.
+\item[$\square$] Vue.js memanggil API melalui Axios.
+\item[$\square$] Pull request, branch protection, dua job CI terbukti.
+\item[$\square$] Job publish, secrets, serta image GHCR dibuktikan tanpa menampilkan rahasia.
+\item[$\square$] Dockerfile multi-stage dan .dockerignore tersedia untuk kedua aplikasi.
+\item[$\square$] Docker Compose menghubungkan database, backend, frontend.
+\item[$\square$] PDF hasil kompilasi Overleaf diperiksa sebelum pengumpulan.
+\end{itemize}
+\end{document}
